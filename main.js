@@ -57,6 +57,31 @@ app.post('/generate-from-image', upload.single('image'), async (req, res) => {
     }
 })
 
+app.post('/generate-from-document', upload.single('document'), async (req, res) => {
+    const filepath = req.file.path
+    const buffer = fs.readFileSync(filepath)
+    const base64Data = buffer.toString('base64')
+    const mimeType = req.file.mimetype
+
+    try{
+        const documentPart = {
+            inlineData: {
+                data: base64Data,
+                mimeType: mimeType
+            }
+        }
+
+        const result = await model.generateContent(['analyze this document',documentPart])
+        const response = await result.response
+        res.json({output: response.text()})
+
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    } finally {
+        fs.unlinkSync(req.file.path)
+    }
+})
+
 // async function run() {
 //     // const prompt = "write a story similar to cinderella"
 
