@@ -38,16 +38,16 @@ app.post('/generate-from-image', upload.single('image'), async (req, res) => {
 
     try{
         const imageBuffer = fs.readFileSync(image)
-        const mimeType = mime.lookup(image)
+        const mimeType = req.file.mimetype
 
-        imagePart = {
+        const imagePart = {
             inlineData: {
                 data: imageBuffer.toString('base64'),
                 mimeType: mimeType
             }
         }
 
-        const result = await model.generateContent([prompt, image])
+        const result = await model.generateContent([prompt, imagePart])
         const response = await result.response
         res.json({output: response.text()})
     } catch (error) {
